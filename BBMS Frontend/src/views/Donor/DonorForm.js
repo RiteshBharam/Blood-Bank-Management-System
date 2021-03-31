@@ -1,0 +1,256 @@
+import React, { useState } from "react";
+import { makeStyles } from "@material-ui/core/styles";
+import Paper from "@material-ui/core/Paper";
+import Grid from "@material-ui/core/Grid";
+import TextField from "@material-ui/core/TextField";
+import { Button, Tooltip, Typography } from "@material-ui/core";
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import Select from '@material-ui/core/Select';
+import NativeSelect from '@material-ui/core/NativeSelect';
+import axios from "axios";
+import DonorLoginView from 'src/views/auth/DonorLogin';
+import {Alert} from '@material-ui/lab'
+import { useNavigate } from "react-router-dom";
+const useStyles = makeStyles((theme) => ({
+    root: {
+        flexGrow: 1
+    },
+    paper: {
+        padding: theme.spacing(2),
+        textAlign: "center",
+        color: theme.palette.text.secondary
+    },
+    paper1: {
+        padding: theme.spacing(2),
+        textAlign: "center"
+    },
+    formControl: {
+        margin: theme.spacing(1),
+        minWidth: 120
+    },
+    selectEmpty: {
+        marginTop: theme.spacing(2)
+    },
+    detailtable: {
+        width: "80%",
+        padding: "10% 0 0",
+        margin: "auto"
+    },
+    typographyStyle: {
+        color: "#000000",
+        textAlign: "center",
+        opacity: "1",
+        font: "normal normal bold 32px/64px Calibri",
+        fontFamily: "Roboto",
+        color: '#707070',
+        marginBottom: "1.5rem",
+        marginTop: "1.5rem"
+    }
+}));
+
+export default function CenteredGrid(props) {
+
+    const classes = useStyles();
+    const [formData, setFormData] = useState({});
+    const [sex, setSex] = React.useState('');
+    const [bloodgroup, setBloodGroup] = React.useState('');
+    const [successMessage, setSuccess] = useState(false);
+    const [errorMessage, setError] = useState(false);
+    const [isLoginOpen, setLogin] = useState(false);
+    const navigate=useNavigate();
+    console.log("donor props", props);
+
+
+    const handleChangeSex = (event) => {
+        setSex(event.target.value);
+    };
+    const handleChangeBloodGroup = (event) => {
+        setBloodGroup(event.target.value);
+    };
+    const handleChange = (event) => {
+        const { name, value } = event.target;
+        setFormData((formData) => ({
+            ...formData,
+            [name]: value
+        }));
+        let d = Object.values(formData);
+        console.log("donor data >>>>>>>>>>>>>>>>", d);
+
+    };
+
+
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        console.log("hi")
+        const data = {
+            "name": formData.name,
+            "address": formData.address,
+            "email": formData.email,
+            "password": formData.password,
+            "contactNumber": formData.phone,
+            "age": formData.age,
+            "gender": sex,
+            "bloodGroup": bloodgroup
+        }
+        console.log("my form data is.......", data);
+        fetch(`http://localhost:8080/donor/registration`, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json; charset=utf8'
+            },
+           body:JSON.stringify(data)
+            
+            
+        }).then(response => {
+            if (response.status === 201) {
+              console.log("final resp....",response)
+              setSuccess(true)
+              setTimeout(() => {
+                setLogin(true);
+              }, 5000)
+        
+            }
+          
+           
+        })
+    }
+    if(isLoginOpen){
+        navigate('/donorlogin', { replace: true });
+    }
+    return (
+
+
+        <div className={classes.root}>
+            <br />
+            <Typography className={classes.typographyStyle}>
+                Donor Form
+            </Typography>
+            {successMessage ? (
+                    <>
+                      <Alert severity="success">Data Submitted Successfully!!</Alert>
+                    </>
+                  ) : null}
+            <Grid container spacing={3}>
+                <Grid item xs={12}></Grid>
+                <Grid item xs={5} className={classes.detailtable}>
+                    <Paper className={classes.paper}>
+                        <div
+                            style={{
+                                width: "70%",
+                                marginLeft: "15%"
+                            }}
+                        >
+                            <form
+                                noValidate={true}
+                                style={{ display: "grid", padding: "1rem" }}
+                                onSubmit={handleSubmit}
+
+                            >
+                                <TextField
+                                    id="standard-basic"
+                                    label="Name"
+                                    onChange={handleChange}
+                                    name="name"
+                                />
+                                <TextField
+                                    id="standard-basic"
+                                    label="Address"
+                                    onChange={handleChange}
+                                    name="address"
+                                />
+                                <TextField
+                                    id="standard-basic"
+                                    label="Email"
+                                    onChange={handleChange}
+                                    name="email"
+                                />
+                                 <TextField
+                                    id="standard-basic"
+                                    label="Password"
+                                    onChange={handleChange}
+                                    name="password"
+                                    type="password"
+                                />
+                                <TextField
+                                    id="standard-basic"
+                                    label="Phone No"
+                                    onChange={handleChange}
+                                    name="phone"
+                                    onInput={(e) => {
+                                        e.target.value = Math.max(0, parseInt(e.target.value)).toString().slice(0, 10)
+                                    }}
+                                />
+
+                                <TextField
+                                    id="standard-basic"
+                                    label="Age"
+                                    type="Number"
+                                    name="age"
+                                    onChange={handleChange}
+
+                                />
+                                <div >
+                                    <Select
+                                        value={sex}
+                                        onChange={handleChangeSex}
+                                        displayEmpty
+                                        className={classes.selectEmpty}
+                                        inputProps={{ 'aria-label': 'Without label' }}
+                                        style={{ width: '30%' }}
+                                    >
+                                        <MenuItem value="" disabled>
+                                            Sex
+                                    </MenuItem>
+                                        <MenuItem value="Female">Female</MenuItem>
+                                        <MenuItem value="Male">Male</MenuItem>
+                                       
+                                    </Select>
+
+                                    <Select
+                                        value={bloodgroup}
+                                        onChange={handleChangeBloodGroup}
+                                        displayEmpty
+                                        className={classes.selectEmpty}
+                                        inputProps={{ 'aria-label': 'Without label' }}
+                                        style={{ marginLeft: '20px' }}
+
+                                    >
+                                        <MenuItem value="" disabled>
+                                            Blood Group
+                                    </MenuItem>
+                                        <MenuItem value="OPOSITIVE">O+</MenuItem>
+                                        <MenuItem value="ONEGATIVE">O-</MenuItem>
+                                        <MenuItem value="APOSITIVE">A+</MenuItem>
+                                        <MenuItem value="ANEGATIVE">A-</MenuItem>
+                                        <MenuItem value="BPOSITIVE">B+</MenuItem>
+                                        <MenuItem value="BNEGATIVE">B-</MenuItem>
+                                        <MenuItem value="ABPOSITIVE">AB+</MenuItem>
+                                        <MenuItem value="ABNEGATIVE">AB-</MenuItem>
+
+
+                                    </Select>
+                                </div>
+
+                                <br />
+                                <Button
+                                    type="submit"
+                                    variant="contained"
+                                    color="primary"
+
+                                >
+                                    Proceed
+                      </Button>
+                                <br />
+                            </form>
+
+                        </div>
+                    </Paper>
+                </Grid>
+            </Grid>
+        </div>
+    );
+
+
+}
